@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Website/PDF ChatBot</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --container-bg: #1e1e1e;
+      --input-bg: #2c2c2c;
+      --text-color: #ffffff;
+      --bot-bubble: #333;
+      --user-bubble: #4caf50;
+      --loader-color: #999;
+      --border-radius: 12px;
+    }
+    body.light-mode {
+      --bg-color: #f0f0f0;
+      --container-bg: #ffffff;
+      --input-bg: #eaeaea;
+      --text-color: #000000;
+      --bot-bubble: #dddddd;
+      --user-bubble: #a5d6a7;
+      --loader-color: #666;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .container {
+  background-color: var(--container-bg);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 650px;
+  box-sizing: border-box;
+}
+    h2, h3 {
+      margin-top: 0;
+      color: #00e676;
+      text-align: center;
+    }
+    input, button {
+      padding: 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    input {
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    input::placeholder {
+      color: #aaa;
+    }
+    button {
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    button:disabled {
+      background-color: #444;
+      cursor: not-allowed;
+    }
+    #url-submit {
+  align-self: flex-start;
+  padding: 12px 20px;
+  margin-top: 4px; /* spacing from input section */
+}
+    #url-submit, #ask-btn {
+      background-color: #00e676;
+      color: #000;
+    }
+    #url-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space between form elements */
+}
+#url {
+  flex: 1;
+  min-width: 0;
+}
+
+    #url-submit:hover:not(:disabled), #ask-btn:hover:not(:disabled) {
+      background-color: #00c853;
+    }
+    #loader-url, #loader-question {
+      display: none;
+      font-style: italic;
+      color: var(--loader-color);
+      margin-top: 10px;
+    }
+    .chat-window {
+      background-color: var(--container-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--border-radius);
+      padding: 15px;
+      height: 350px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.2);
+      width: 100%;
+    }
+    .chat-entry {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 12px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .bubble {
+      padding: 12px 18px;
+      border-radius: 14px;
+      max-width: 75%;
+      word-wrap: break-word;
+      font-size: 15px;
+      line-height: 1.4;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+    .user {
+      background: linear-gradient(135deg, #00e676, #00c853);
+      align-self: flex-end;
+      text-align: left;
+      color: #000;
+      font-weight: 500;
+    }
+    .bot {
+      background-color: var(--bot-bubble);
+      align-self: flex-start;
+      text-align: left;
+    }
+    .toggle-btn {
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      font-size: 14px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      width: auto;
+    }
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .attach-btn {
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+      padding: 0 8px;
+      border-radius: var(--border-radius);
+      background-color: var(--input-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      line-height: 1;
+    }
+    .pdf-tag {
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      padding: 8px 12px;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 60%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+      user-select: none;
+    }
+    .pdf-tag .pdf-icon {
+      font-size: 16px;
+    }
+    .pdf-tag .clear-pdf {
+      cursor: pointer;
+      color: #f44336;
+      font-weight: bold;
+      font-size: 18px;
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+      user-select: none;
+      transition: color 0.3s;
+    }
+    .pdf-tag .clear-pdf:hover {
+      color: #ff7961;
+    }
+    #question-form {
+      display: flex;
+      gap: 10px;
+    }
+    #question {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="toggle-btn" onclick="toggleMode()">🌙 Toggle Light/Dark Mode</button>
+    <h2>🌐 Website / 📄 PDF ChatBot</h2>
+
+    <form id="url-form">
+      <div class="input-wrapper">
+        <input type="text" id="url" placeholder="Enter website URL..." autocomplete="off" />
+        
+        <div id="pdf-tag" class="pdf-tag" style="display:none;">
+          <span class="pdf-icon">📄</span>
+          <span id="pdf-filename"></span>
+          <button type="button" class="clear-pdf" title="Remove uploaded PDF">❌</button>
+        </div>
+
+        <label for="pdf-upload" class="attach-btn" title="Upload PDF">📎</label>
+        <input type="file" id="pdf-upload" accept="application/pdf" style="display:none;" />
+      </div>
+      <button type="submit" id="url-submit">Submit</button>
+      <div id="loader-url">🔄 Processing... Please wait</div>
+    </form>
+
+    <div id="chat-box" style="display:none;">
+      <h3>🤖 Ask a Question</h3>
+      <div class="chat-window" id="chat-window"></div>
+      <form id="question-form">
+        <input type="text" id="question" placeholder="Ask something..." required autocomplete="off" />
+        <button type="submit" id="ask-btn">Ask</button>
+      </form>
+      <div id="loader-question">💬 Thinking... Please wait</div>
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById("url");
+    const pdfUpload = document.getElementById("pdf-upload");
+    const pdfTag = document.getElementById("pdf-tag");
+    const pdfFilenameSpan = document.getElementById("pdf-filename");
+    const clearPdfBtn = pdfTag.querySelector(".clear-pdf");
+    const urlForm = document.getElementById("url-form");
+    const loaderUrl = document.getElementById("loader-url");
+    const urlSubmitBtn = document.getElementById("url-submit");
+    const chatBox = document.getElementById("chat-box");
+    const questionForm = document.getElementById("question-form");
+    const questionInput = document.getElementById("question");
+    const askBtn = document.getElementById("ask-btn");
+    const loaderQuestion = document.getElementById("loader-question");
+    const chatWindow = document.getElementById("chat-window");
+
+    pdfUpload.addEventListener("change", () => {
+      if (pdfUpload.files.length > 0) {
+        pdfFilenameSpan.textContent = pdfUpload.files[0].name;
+        pdfTag.style.display = "flex";
+        urlInput.style.display = "none";
+        urlInput.value = "";
+      } else {
+        clearPdf();
+      }
+    });
+
+    clearPdfBtn.addEventListener("click", clearPdf);
+
+    function clearPdf() {
+      pdfUpload.value = "";
+      pdfFilenameSpan.textContent = "";
+      pdfTag.style.display = "none";
+      urlInput.style.display = "block";
+    }
+
+    urlForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loaderUrl.style.display = "block";
+      urlSubmitBtn.disabled = true;
+
+      let endpoint = "";
+      let formData = new FormData();
+
+      if (pdfUpload.files.length > 0) {
+        endpoint = "/set_pdf";
+        formData.append("pdf", pdfUpload.files[0]);
+      } else if (urlInput.value.trim() !== "") {
+        endpoint = "/set_url";
+        formData.append("url", urlInput.value.trim());
+      } else {
+        alert("Please enter a URL or upload a PDF.");
+        loaderUrl.style.display = "none";
+        urlSubmitBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const response = await fetch(endpoint, { method: "POST", body: formData });
+        if (!response.ok) throw new Error(await response.text());
+        chatBox.style.display = "block";
+        appendToChat("✅ Data processed successfully. You can now ask questions.", "bot");
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        loaderUrl.style.display = "none";
+        urlSubmitBtn.disabled = false;
+      }
+    });
+
+    questionForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loaderQuestion.style.display = "block";
+      askBtn.disabled = true;
+
+      const questionText = questionInput.value.trim();
+      if (!questionText) {
+        loaderQuestion.style.display = "none";
+        askBtn.disabled = false;
+        return;
+      }
+
+      appendToChat(questionText, "user");
+      questionInput.value = "";
+
+      try {
+        const response = await fetch("/ask", { 
+          method: "POST", 
+          body: new URLSearchParams({ question: questionText }),
+          headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        });
+        if (!response.ok) throw new Error(await response.text());
+        const data = await response.json();
+        appendToChat(data.answer || "No answer found.", "bot");
+      } catch (err) {
+        appendToChat("⚠️ Error: " + err.message, "bot");
+      } finally {
+        loaderQuestion.style.display = "none";
+        askBtn.disabled = false;
+      }
+    });
+
+    function appendToChat(text, sender) {
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${sender}`;
+      bubble.textContent = text;
+      const wrapper = document.createElement("div");
+      wrapper.className = "chat-entry";
+      wrapper.appendChild(bubble);
+      chatWindow.appendChild(wrapper);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("light-mode");
+    }
+  </script>
+</body>
+</html>
