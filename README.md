@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 📚 ChatBot for Website & PDF (RAG-based)
 
 A **Retrieval-Augmented Generation (RAG)** application that lets users upload **PDF documents** or provide **website URLs**, and then interactively ask questions about their content.  
@@ -125,7 +124,3 @@ Visit **http://127.0.0.1:8000** in your browser.
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-=======
-# Interactive-Chatbot
-Interactive RAG-based chatbot using FastAPI, LangChain, FAISS, and Gemini 2.5 Flash that lets users upload PDFs or URLs and ask context-aware questions. If an answer isn’t found in the documents, it clearly informs the user and provides a general-knowledge response.
->>>>>>> 5067d4a67b0dc66d2eb67377b28e1b1048e03e9c

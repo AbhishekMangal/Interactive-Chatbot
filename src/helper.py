@@ -7,6 +7,8 @@ from langchain.text_splitter import TokenTextSplitter, CharacterTextSplitter
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQAWithSourcesChain
+from src.prompt import template
+from langchain.prompts import PromptTemplate
 import nltk
 nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger')
@@ -58,11 +60,21 @@ def embedding(text_chunks):
 
 def chain_formation(vectorstore):
 
+
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash"
     
     )
-    chain = RetrievalQAWithSourcesChain.from_llm(llm=llm, retriever= vectorstore.as_retriever())
+    
+    custom_prompt = PromptTemplate(
+        template=template,
+        input_variables=["summaries", "question"]
+                                   )
+    chain = RetrievalQAWithSourcesChain.from_chain_type(llm=llm, 
+                                                retriever= vectorstore.as_retriever(),
+                                                chain_type="stuff",
+                                                chain_type_kwargs={"prompt": custom_prompt}
+                                                 )
 
     return chain
 
